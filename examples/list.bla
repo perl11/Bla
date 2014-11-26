@@ -1,0 +1,93 @@
+-- std/list.bla
+-- standard list functions and misc functional stuff in Bla.
+-- [some from the Haskell/Gofer standard prelude]
+
+id(x) = x					-- silly, but ok.
+
+dot(f,g) = lambda(x) = f(g(x))			-- function composition.
+
+flip(f) = lambda(x,y) = f(y,x)			-- reverse arguments
+
+
+-- very standard list functions.
+
+hd([x|_]) = x					-- um,... car? cdr?
+tl([_|x]) = x
+
+null([]) = true
+null(_)  = false
+
+last([x])   = x
+last([_|x]) = last(x)
+
+len([])    = 0
+len([_|t]) = len(t)+1
+
+append([],y)    = y				-- how familiar.
+append([h|t],y) = [h|append(t,y)]
+
+map(f,[])    = []
+map(f,[h|t]) = [f(h)|map(f,t)]
+
+equal([],[],_)        = true			-- equality of whole lists
+equal([],_,_)         = false
+equal(_,[],_)         = false
+equal([a|b],[c|d],eq) = eq(a,c) and equal(b,d,eq)
+
+member([],_)       = false
+member([h|t],test) = test(h) or member(t,test)	-- quits if found.
+
+
+-- folding, and functions building on that.
+
+foldl(f,z,[])    = z				-- fold left assoc
+foldl(f,z,[h|t]) = foldl(f,f(z,h),t)
+
+foldr(f,z,[])    = z
+foldr(f,z,[h|t]) = f(h,foldr(f,z,t))
+
+reverse(x) = foldl(lambda(t,h) = [h|t],[],x)	-- sneaky!
+
+sum(x)     = foldl(lambda(x,y) = x+y,0,x)	-- only ints :-(
+product(x) = foldl(lambda(x,y) = x*y,1,x)
+
+andl(x) = foldr(lambda(x,y) = x and y,true,x)	-- true if all are true.
+orl(x)  = foldr(lambda(x,y) = x or y,false,x)	-- true if atleast one true. 
+
+forall(p,x) = andl(map(p,x))			-- all true w.r.t p().
+exists(p,x) = orl(map(p,x))
+
+
+-- misc. list functions.
+
+nth(0,[h|_]) = h
+nth(x,[_|t]) = nth(x-1,t)
+
+filter(_,[])    = []				-- filter w.r.t. p()
+filter(p,[h|t]) = p(h) -> [h|filter(p,t)]
+                | filter(p,t)
+
+findfirst([],_,o)    = o			-- first that matches or o
+findfirst([h|t],f,o) = f(h) -> h | findfirst(t,f,o)
+
+nub([],_)     = []				-- remove duplicates
+nub([h|t],eq) = [h|nub(filter(lambda(x) = eq(h,x),t),eq)]
+
+zip([],[])       = []
+zip([a|b],[c|d]) = [(a,c)|zip(b,d)]
+
+zipwith([],[],_)       = []
+zipwith([a|b],[c|d],f) = [f(a,c)|zipwith(b,d,f)]
+
+
+-- sorting etc.
+
+qsort([],_)     = []
+qsort([h|t],lt) = append(qsort(filter(lambda(x) = lt(x,h),t),lt),
+                      [h|qsort(filter(lambda(x) = not lt(x,h),t),lt)])
+
+
+-- tuple functions somehow end up here too
+
+fst((x,_)) = x
+snd((_,x)) = x

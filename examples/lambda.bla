@@ -1,0 +1,25 @@
+-- a lambda evaluator (just the core, no fancy stuff)
+
+exp()
+app(f:exp, a:exp):exp    implements exp
+atom(a:string):exp       implements exp
+lam(p:string, b:exp):exp implements exp
+
+ev(app(f,a)) = ev(replace(b,p,a)) do funval(f) <=> lam(p,b)
+ev(e)        = e
+
+funval(app(_,_)/e) = funval(ev(e))
+funval(atom(x))    = funval(getdef(x))
+funval(e)          = e
+
+replace(app(f,a),o,n)  = app(replace(f,o,n),replace(a,o,n))
+replace(atom(a)/e,b,n) = a=b -> n | e
+replace(lam(p,b),o,n)  = n <=> atom(a) and p=a
+  -> lam(u,replace(replace(b,p,atom(u)),o,n)) where u = genchar()
+   | lam(p,replace(b,o,n))
+
+
+-- these would need to be more useful
+
+getdef(x) = nil
+genchar() = 'x'

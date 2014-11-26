@@ -1,0 +1,43 @@
+
+	EARLY BETA RELEASE OF THE BLA COMPILER
+
+Note well: all of this is intended for language hackers
+and other very interested people, not for general consumption.
+
+This archive contains a very early beta of a Bla compiler
+implementation. You will want to read the paper on Bla that is
+hopefully available from where you got this, if not, point your
+browser at ftp://mars.let.uva.nl/pub/WWW/wouter/bla.html to
+get it (ps/dvi/tex), or use the ascii version in this archive.
+
+To get it all to run, you will have to compile the sources
+in the src/ directory by typing `make'. I have only tested
+this software on Sparc machines (SunOs and Solaris) with
+GnuC++ and on the Amiga (AmigaOS and NetBSD) with GnuC++ and
+MaxonC++ 3.0. Getting this to compile on other systems is
+entirely your problem, it shouldn't be a problem for standard
+32bit unix systems with GnuC++ however. Executables for the
+Amiga are provided in the amiga/ directory.
+
+Assuming you got it all to compile ok, this will result in
+the three executables `bla', `bint' and `bdsm'. The functionality
+of these three programs is described in the aforementioned paper
+(the ascii version is available in the doc/ directory). Some
+sample code to compile is in the examples/ directory. Try:
+
+# src/bla examples/prolog
+
+The software in this archive comes with no support of any kind,
+i.e. you're on your own. You may use the software any way you
+see fit for personal purposes, if however you want to reuse /
+redistribute it in part or whole I'd be very pleased if you
+contacted me about it first.
+
+If you want to contact me for whatever reason, email to
+Wouter@mars.let.uva.nl (or W.v.Oortmerssen@let.uva.nl).
+Do not email me with complaints about the implementation
+(bugs/features) since I know, or ask about future releases
+since I don't know.
+
+Wouter van Oortmerssen
+

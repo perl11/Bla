@@ -1,0 +1,186 @@
+-- a mini prolog interpreter
+-- translated from E, which was in turn translated from LISP,
+-- and greatly transformed/enhanced along the way.
+-- (see: "Implementations of ProLog", J.A.Campbell, editor.)
+
+-- module 'std/list'	-- uses these functions
+
+-- included directly because we have no real module-system as of yet
+
+foldr(f,z,[])    = z
+foldr(f,z,[h|t]) = f(h,foldr(f,z,t))
+
+stdout():int extern
+stdin():int extern
+getc(file:int):int extern
+strcmp(a:string,b:string):bool extern
+puts(s:string,file:int):int extern
+put(s) = puts(s,stdout())
+
+-- the prolog engine (as object)
+
+prolog() = self where
+
+  -- prolog values. `v' is the top level type that the compiler will be
+  -- inferring for most prolog expressions.
+
+  v()
+  cell(h:v,t:v):v  implements v
+  atom(s:string):v implements v
+  var(s:string):v  implements v
+
+  -- the only variable in the engine
+
+  database:[[v]] = []
+  setdatabase(b) do database:=b
+
+  -- predicates are build out of cells for simplicity in unification
+
+  pred(h,l) = cell(atom(h),foldr(cell,nil,l))
+
+  -- a `molec' is a tuple of (level,prolog_exp), where level is used
+  -- to discriminate variables at different levels in the proof tree.
+  -- two of these make up a binding in the env-list.
+
+  molec(l:int,e:v)
+
+  lvl(m:molec) = m.l
+  xpr(m:molec) = m.e
+
+  bind(x:molec,y:molec,e:bind)
+
+  bond(_,nil) = nil
+  bond(_,bind(_,_,nil)) = nil
+  bond(molec(xl,xe)/x,bind(molec(yl,ye),b,e)) =
+    xl=yl and equal(xe,ye) -> b | bond(x,e)
+
+  -- standard structural equivalence stuff for any prolog exp.
+
+  equal(nil,nil)                 = true
+  equal(cell(xh,xt),cell(yh,yt)) = equal(xh,yh) and equal(xt,yt)
+  equal(var(x),var(y))           = strcmp(x,y)
+  equal(atom(x),atom(y))         = strcmp(x,y)
+  equal(_,_)                     = false
+
+  -- lookup() retrieves values through levels of variable bindings
+
+  lookup(nil,env)               = nil
+  lookup(molec(_,nil)/p,_)      = p
+  lookup(molec(_,var(_))/p,env) = lookup(bond(p,env),env) or p
+  lookup(p,env)                 = p
+
+  gety(a) = (c="\n" -> a | gety(c)) where c = getc(stdin())
+
+  toplevel(env) = (gety("n")="y" -> 0 | -1) do
+    showenv(env,env)
+    put('\nMore? (y/n) ')
+
+  prove(goals) do put(seek([goals],[0],bind(nil,nil,nil),1) -> 'yes.\n'
+                                                             | 'no.\n')
+
+  -- seek() tries to prove a [[goal]]. nlist and n control level
+  -- information. the returnvalue is either nil for failure,
+  -- or a level, whicht may be used by a cut predicate.
+  -- together with unify(), this is the interpreter core.
+
+  seek(nil,_,env,_) = toplevel(env)
+  seek([nil|goalrest],[_|ntail],env,n) = seek(goalrest,ntail,env,n)
+  seek([[goalh|goalt]|goalrest],[nhead|_]/nlist,env,n) =
+    seekdb(database,molec(nhead,goalh),[goalt|goalrest],env,n,nlist)
+
+  seekdb(nil,_,_,_,_,_) = nil
+  seekdb([[head|tail]|db],goalmolec,rest,env,n,nlist) =
+    (`env2:=unify(goalmolec,molec(n,head),env)) and
+      (`tmp:=seek([tail|rest],[n|nlist],env2,n+1))
+        -> tmp<>n and tmp | seekdb(db,goalmolec,rest,env,n,nlist)
+
+  -- unification of two level-tagged expressions. returns an environment
+  -- (possibly with new bindings) or nil for failure
+
+  unify(x,y,env) = unifyl(lookup(x,env),lookup(y,env),env)
+    -- do put('unify: '); show(xpr(x)); put(' <=> '); show(xpr(y)); put('\n')
+
+  unifyl(molec(xl,xe)/x,molec(yl,ye)/y,env) =
+    (xl=yl and equal(xe,ye) and env) or
+      ((xe,ye) | (nil,nil)         -> env
+               | (nil,var(_))      -> bind(y,x,env)
+               | (nil,_)           -> nil
+               | (var(_),nil)      -> bind(x,y,env)
+               | (_,nil)           -> nil
+               | (var(_),_)        -> bind(x,y,env)
+               | (_,var(_))        -> bind(y,x,env)
+               | (atom(a),atom(b)) -> strcmp(a,b) and env
+               | (cell(xeh,xet),cell(yeh,yet)) ->
+                   (env:=unify(molec(xl,xeh),molec(yl,yeh),env)) and
+                     unify(molec(xl,xet),molec(yl,yet),env)
+               | _                 -> nil)
+
+  -- showenv shows all variable-bindings of the user-goal (= level 0)
+
+  showenv(bind(_,_,nil),_) do nil
+  showenv(bind(molec(0,x)/h,t,e),env) do
+    show(x)
+    put(' = ')
+    show(convmolec(h,env))
+    put('; ')
+    showenv(e,env)
+  showenv(bind(_,_,e),env) do
+    showenv(e,env)
+
+  show(nil) do put('nil')
+  show(atom(s)) do put(s)
+  show(var(s)) do put(s)
+  show(cell(h,t)) do put('['); show(h); put('|'); show(t); put(']')
+    
+  -- these two convert an arbitrary prolog expression to one where
+  -- all variables are replaced by whatever they're bound to.
+
+  convmolec(m,env) = (`lv:=lookup(m,env))=m -> atom('?')
+                                             | convexp(lvl(lv),xpr(lv),env)
+
+  convexp(l,nil,env)       = nil
+  convexp(l,cell(h,t),env) = cell(convexp(l,h,env),convexp(l,t,env))
+  convexp(l,var(_)/e,env)  = convmolec(molec(l,e),env)
+  convexp(l,e,env)         = e
+
+
+-- call the prolog engine with a sample database and some goals.
+-- there should really be a parser for this instead ;-]
+
+main() do
+
+  -- create one engine (or more!)
+
+  `p:=prolog()
+
+  -- throw in a few clauses (silly like this, but ok...)
+
+  -- true.
+  -- eq(X,X).
+  -- append([],X,X).
+  -- append([X|Y],Z,[X|U]):-append(Y,Z,U).
+  -- father(med,small).
+  -- father(big,med).
+  -- grandfather(X,Y):-father(X,Z),father(Z,Y).
+  -- call(X):-X.
+
+  p.setdatabase([
+    [p.pred('true',[])],
+    [p.pred('eq',[p.var('X'),p.var('X')])],
+    [p.pred('append',[nil,p.var('X'),p.var('X')])],
+    [p.pred('append',[p.cell(p.var('X'),p.var('Y')),
+       p.var('Z'),p.cell(p.var('X'),p.var('U'))]),
+       p.pred('append',[p.var('Y'),p.var('Z'),p.var('U')])],
+    [p.pred('father',[p.atom('med'),p.atom('small')])],
+    [p.pred('father',[p.atom('big'),p.atom('med')])],
+    [p.pred('grandfather',[p.var('X'),p.var('Y')]),
+      p.pred('father',[p.var('X'),p.var('Z')]),
+      p.pred('father',[p.var('Z'),p.var('Y')])],
+    [p.pred('call',[p.var('X')]),p.var('X')]])
+  
+  -- classical `grandfather(X,Y)' and `append(X,Y,[a,b,c])' calls:
+
+  p.prove([p.pred('grandfather',[p.var('X'),p.var('Y')])])
+  p.prove([p.pred('append',[p.var('X'),p.var('Y'),
+    p.cell(p.atom('a'),p.cell(p.atom('b'),p.cell(p.atom('c'),nil)))])])
+

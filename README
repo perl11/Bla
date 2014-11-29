@@ -7,7 +7,7 @@ and other very interested people, not for general consumption.
 This archive contains a very early beta of a Bla compiler
 implementation. You will want to read the paper on Bla that is
 hopefully available from where you got this, if not, point your
-browser at ftp://mars.let.uva.nl/pub/WWW/wouter/bla.html to
+browser at http://strlen.com/bla-language to
 get it (ps/dvi/tex), or use the ascii version in this archive.
 
 To get it all to run, you will have to compile the sources
@@ -40,3 +40,10 @@ releases since I don't know.
 
 Wouter van Oortmerssen
 
+Update (2014):
+
+I've added portability code for modern C++ compilers under 64bit,
+but 64bit does not work yet.
+Wouter is cool with a BSD license on this work.
+
+Reini Urban

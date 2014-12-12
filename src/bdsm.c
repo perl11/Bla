@@ -95,7 +95,7 @@ void dsm(iinfo *i) {
 };
 
 int main(int argc, char **argv) {
-  if(argc!=2) error("missing arg\n");
+  if(argc!=2) error("wrong number of args\n");
   char *basename=argv[1];
   char ilname[100]; strcpy(ilname,basename); strcat(ilname,".il");
   iinfo *i=ilload(ilname);

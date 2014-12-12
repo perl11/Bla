@@ -1,0 +1,5 @@
+src/bdsm
+src/bint
+src/bla
+src/*.o
+examples/*.il

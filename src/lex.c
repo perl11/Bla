@@ -141,7 +141,7 @@ int getstrchar(char end) {
     case '\n':
       p--; error_rec("string constant not terminated"); return -1;
     case '\'': case '\"':
-      if(c==end) if(*p==c) { p++; } else { return -1; }; return c;
+      if(c==end) { if(*p==c) { p++; } else { return -1; }; return c; }
     case '\\':
       switch(c=*p++) {
         case '0': return '\0';		// zero (0)

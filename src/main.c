@@ -1,4 +1,4 @@
-// the main program
+// the main bla program
 
 #include "bla.h"
 #include "lex.h"

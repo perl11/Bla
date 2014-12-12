@@ -159,8 +159,8 @@ void clos::show() {
   if(el) { P(" do\n"); showlay(el); };
 };
 
-void intc::show() { P("%ld",value); };
-void stringc::show() { char *s=str,c; P("\'"); while((c=*s++)) if(c>=32) { P("%c",c); } else { P("\\%ld",c); }; P("\'"); };
+void intc::show() { P("%d",value); };
+void stringc::show() { char *s=str,c; P("\'"); while((c=*s++)) if(c>=32) { P("%c",c); } else { P("\\%c",c); }; P("\'"); };
 void unary::show() { P("<unary>"); };
 
 void ifthen::show() { 

@@ -2,7 +2,7 @@
 
 #include "bla.h"
 #include <stdio.h>
-#include <new.h>
+#include <new>
 #include <stdlib.h>
 
 #define FAST_SIZE 10000				/* alloc each time */

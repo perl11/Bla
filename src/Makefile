@@ -1,8 +1,8 @@
 # makefile for Bla compiler and related utilities (bla/bint/bdsm)
 
 #CXX := g++ -g
-CXX:=clang++-mp-3.4 -std=c++11 -g -Wno-c++11-compat-deprecated-writable-strings \
-  -Wno-format-security
+#CXX:=clang++ -std=c++11 -g -Wno-c++11-compat-deprecated-writable-strings -Wno-format-security
+CXX:=/usr/src/llvm/r206337/bin/clang++ -std=c++11 -g -Wno-deprecated-writable-strings -Wno-format-security
 #CC = mcppc
 OPT = 
 OBJECTS = main.o lex.o error.o parse.o object.o exp.o typec.o codegen.o ilsave.o tools.o

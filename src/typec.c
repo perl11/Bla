@@ -464,7 +464,7 @@ type *findbind(exp *eo, typepar *par, type *other) {
   t=findbind_cur(par);
   //par->show(); other->show(); t->show(); printf("\n");
   if(t) return unify_types(eo,t,other);
-  if(hackidexp==thisidexp) if(t=find_cur_tparam(par,hackenv)) return t;
+  if(hackidexp==thisidexp) if((t=find_cur_tparam(par,hackenv))) return t;
   addbind(par,other);
   return other;
 };
@@ -784,7 +784,9 @@ type *unify_types(exp *eo, type *a, type *b, int a_is_upper_limit) {
   if(b->t==VAR) { indirect(eo,(typepar *)b,a); return a; };
   if(a->t==VAR) { indirect(eo,(typepar *)a,b); return b; };
   if(a->t==ANY) { return a; };		// sortof temp
-  if(a->t!=b->t) if(a_is_upper_limit) { type_error(eo,a,b); return a; } else { return anyt; };
+  if(a->t!=b->t) { 
+    if(a_is_upper_limit) { type_error(eo,a,b); return a; } else { return anyt; };
+  }
   switch(a->t) {
     case LIST: case VECTOR: return unify_par(eo,(typepar *)a,(typepar *)b,a_is_upper_limit);
     case CLASST: return unify_classt(eo,(typeobj *)a,(typeobj *)b,a_is_upper_limit);

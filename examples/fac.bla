@@ -1,0 +1,7 @@
+fac(0) = 1
+fac(n) = n<0 -> 0			-- raise illegal_arg
+       | n*fac(n-1)
+
+-- fac:()->() (__par__) = 1
+-- typechecking fac...
+-- fac:(int)->int (n) = (n:int <=> 0) -> 1 | (n:int <=> n) -> (n:int<0):bool -> 0 | (n:int*fac:(int)->int((n:int-1):int)):int

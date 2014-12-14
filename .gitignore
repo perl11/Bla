@@ -3,3 +3,5 @@ src/bint
 src/bla
 src/*.o
 examples/*.il
+src/TAGS
+*~

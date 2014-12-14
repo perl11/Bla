@@ -69,16 +69,16 @@ enum typeconsts {
 
 class type {				// ANY/INT/REAL/BOOL/STRING
 public:
-  int t;
+  enum typeconsts t;
   type() {};	// silly
-  type(int tag) { t=tag; };
+  type(enum typeconsts tag) { t=tag; };
   void show();
 };
 
 class typepar : public type {		// LIST/VECTOR/VAR/IND/PAR
 public:
   type *par;
-  typepar(int tag, type *p) { t=tag; par=p; };
+  typepar(enum typeconsts tag, type *p) { t=tag; par=p; };
 };
 
 class typeobj : public type {		// CLASST
